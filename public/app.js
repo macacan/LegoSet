@@ -1,3 +1,5 @@
+import { loadData, isApp, getApiKey, setApiKey } from './js/source.js';
+
 const $ = (s) => document.querySelector(s);
 const DAY = 86400000;
 const SAVED_KEY = 'legoset:saved';
@@ -138,28 +140,60 @@ function bind() {
   );
 }
 
-async function init() {
-  bind();
+function showData(data) {
+  state.sets = data.sets || [];
+
+  const themes = [...new Set(state.sets.map((s) => s.theme))].sort((a, b) => a.localeCompare(b, 'sv'));
+  if (!themes.includes(state.theme)) state.theme = '';
+  $('#theme').replaceChildren(new Option('Alla teman', ''), ...themes.map((t) => new Option(t, t)));
+  $('#theme').value = state.theme;
+
+  const upcoming = state.sets.filter((s) => daysLeft(s) >= 0).length;
+  const when = new Date(data.updatedAt).toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' });
+  const status = $('#status');
+  status.textContent = `${upcoming} set på väg ut · uppdaterad ${when}`;
+  status.classList.toggle('warn', data.source === 'demo' || Boolean(data.note));
+  if (data.note) status.textContent += ` — ${data.note}`;
+  render();
+}
+
+async function load(opts) {
+  const status = $('#status');
+  status.classList.remove('warn');
+  status.textContent = getApiKey() && isApp() ? 'Hämtar från Brickset… (kan ta några sekunder)' : 'Laddar…';
   try {
-    const res = await fetch('api/retiring');
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
-    state.sets = data.sets || [];
-
-    const themes = [...new Set(state.sets.map((s) => s.theme))].sort((a, b) => a.localeCompare(b, 'sv'));
-    $('#theme').append(...themes.map((t) => new Option(t, t)));
-
-    const upcoming = state.sets.filter((s) => daysLeft(s) >= 0).length;
-    const when = new Date(data.updatedAt).toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' });
-    const status = $('#status');
-    status.textContent = `${upcoming} set på väg ut · uppdaterad ${when}`;
-    if (data.source === 'demo') status.classList.add('warn');
-    if (data.note) status.textContent += ` — ${data.note}`;
-    render();
+    showData(await loadData(opts));
   } catch (err) {
-    $('#status').textContent = `Kunde inte ladda data (${err.message}).`;
-    $('#status').classList.add('warn');
+    status.textContent = `Kunde inte ladda data (${err.message}).`;
+    status.classList.add('warn');
   }
+}
+
+function bindSettings() {
+  const dlg = $('#settings');
+  $('#open-settings').hidden = false;
+  $('#open-settings').onclick = () => {
+    $('#api-key').value = getApiKey();
+    dlg.showModal();
+  };
+  $('#close-settings').onclick = () => dlg.close();
+  $('#save-settings').onclick = (e) => {
+    e.preventDefault();
+    setApiKey($('#api-key').value.trim());
+    dlg.close();
+    load();
+  };
+  $('#refresh').onclick = (e) => {
+    e.preventDefault();
+    dlg.close();
+    load({ force: true });
+  };
+}
+
+function init() {
+  bind();
+  if (isApp()) bindSettings();
+  load();
 }
 
 init();

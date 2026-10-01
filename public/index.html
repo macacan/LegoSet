@@ -13,7 +13,10 @@
 <body>
   <header class="hero">
     <div class="wrap">
-      <div class="brand"><span class="brick" aria-hidden="true"></span> Utgår snart</div>
+      <div class="topbar">
+        <div class="brand"><span class="brick" aria-hidden="true"></span> Utgår snart</div>
+        <button id="open-settings" class="gear" aria-label="Inställningar" hidden>⚙</button>
+      </div>
       <h1>LEGO-set på väg ut ur sortimentet</h1>
       <p class="lead">Hinn köpa nytt innan de försvinner – eller hitta dem begagnat när de väl har utgått.</p>
     </div>
@@ -47,6 +50,22 @@
     Data från <a href="https://brickset.com" target="_blank" rel="noopener">Brickset</a> (gratis API, cachas ett dygn).
     Utgångsdatum är prognoser och kan ändras. Inte kopplad till LEGO-koncernen.
   </footer>
+
+  <dialog id="settings">
+    <form method="dialog">
+      <h2>Inställningar</h2>
+      <p>Appen hämtar riktig data från <b>Brickset</b>, som har ett gratis API. Skapa ett konto och hämta en nyckel på
+        <a href="https://brickset.com/tools/webservices/requestkey" target="_blank" rel="noopener">brickset.com</a>, och klistra in den här.</p>
+      <label for="api-key">Brickset API-nyckel</label>
+      <input id="api-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="t.ex. 3-AbCd-EfGh-IjKl">
+      <p class="hint">Datan sparas i telefonen och uppdateras en gång per dygn (ungefär 10 anrop). Brickset tillåter 100 anrop per dygn.</p>
+      <div class="actions">
+        <button id="refresh" class="secondary">Uppdatera nu</button>
+        <button id="close-settings" class="secondary" value="cancel">Avbryt</button>
+        <button id="save-settings" class="primary">Spara</button>
+      </div>
+    </form>
+  </dialog>
 
   <template id="card">
     <article class="card">

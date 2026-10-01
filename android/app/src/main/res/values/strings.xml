@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LEGO Utgår snart</string>
+    <string name="title_activity_main">LEGO Utgår snart</string>
+    <string name="package_name">se.legoset.utgarsnart</string>
+    <string name="custom_url_scheme">se.legoset.utgarsnart</string>
+</resources>

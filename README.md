@@ -13,6 +13,23 @@ npm start              # öppna http://localhost:3000
 
 Utan nyckel visas en liten lista med exempeldata.
 
+## Android-app (APK)
+
+Varje push bygger en test-APK med GitHub Actions (`.github/workflows/android.yml`). Den publiceras som releasen **test-apk** under *Releases* i repot.
+
+1. Öppna releasen på telefonen och ladda ner `LegoUtgarSnart.apk`.
+2. Installera filen. Android frågar om du vill tillåta installation från okända källor.
+3. Tryck på ⚙ i appen och klistra in din Brickset-nyckel.
+
+I appen frågar telefonen Brickset direkt och sparar svaret i 24 timmar. Det behövs alltså ingen server.
+
+Bygga själv (kräver Android SDK och JDK 21):
+
+```bash
+npm ci && npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
 ## Datakälla: Brickset (gratis)
 
 [Bricksets API v3](https://brickset.com/article/52664/api-version-3-documentation) är gratis. Det kräver ett konto och en nyckel från <https://brickset.com/tools/webservices/requestkey>. Varje set har ett `exitDate` (väntat utgångsdatum) och sista dag på LEGO.com per region.
@@ -32,7 +49,9 @@ Vi skrapar inte LEGO.com. Deras villkor förbjuder det och sidan blockerar botar
 ```
 server.js           liten HTTP-server + /api/retiring
 lib/brickset.js     hämtning, filtrering, disk-cache
-data/demo-sets.json exempeldata när nyckel saknas
+public/data/       exempeldata när nyckel saknas
 public/             frontend (HTML/CSS/JS, inget byggsteg)
+public/js/          delad Brickset-logik + datakälla (server/app)
+android/            Capacitor-projekt för Android-appen
 test/               npm test
 ```

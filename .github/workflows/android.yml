@@ -1,0 +1,63 @@
+name: Android test-APK
+
+on:
+  push:
+    branches: [main, master, 'claude/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Installera och synka webbappen in i Android-projektet
+        run: |
+          npm ci
+          npm test
+          npx cap sync android
+
+      - name: Bygg debug-APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Döp om APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk LegoUtgarSnart.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LegoUtgarSnart-apk
+          path: LegoUtgarSnart.apk
+
+      - name: Publicera som release "test-apk"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete test-apk --cleanup-tag --yes || true
+          gh release create test-apk LegoUtgarSnart.apk \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Test-APK (${GITHUB_SHA::7})" \
+            --notes "Senaste test-bygget från \`${GITHUB_REF_NAME}\`. Ladda ner LegoUtgarSnart.apk på telefonen och installera (tillåt installation från okända källor)."

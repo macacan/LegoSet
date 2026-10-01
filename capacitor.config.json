@@ -1,0 +1,11 @@
+{
+  "appId": "se.legoset.utgarsnart",
+  "appName": "LEGO Utgår snart",
+  "webDir": "public",
+  "android": {
+    "backgroundColor": "#e3000b"
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}

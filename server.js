@@ -21,7 +21,7 @@ const getData = createStore({
   cacheHours: Number(env.CACHE_HOURS) || 24,
   yearsBack: Number(env.YEARS_BACK) || 4,
   maxPages: Number(env.MAX_PAGES) || 12,
-  demoFile: path.join(root, 'data', 'demo-sets.json'),
+  demoFile: path.join(root, 'public', 'data', 'demo-sets.json'),
 });
 
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
