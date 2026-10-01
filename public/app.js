@@ -47,11 +47,21 @@ function badge(s) {
 function shopLinks(s) {
   const q = encodeURIComponent(`lego ${s.number}`);
   return {
+    lego: `https://www.lego.com/sv-se/search?q=${encodeURIComponent(s.number)}`,
     tradera: `https://www.tradera.com/search?q=${q}`,
     blocket: `https://www.blocket.se/annonser/hela_sverige?q=${q}`,
     bricklink: `https://www.bricklink.com/v2/catalog/catalogitem.page?S=${encodeURIComponent(s.fullNumber)}#T=P`,
     ebay: `https://www.ebay.com/sch/i.html?_nkw=${q}`,
   };
+}
+
+// Varje tema får en egen klossfärg (samma tema = samma färg).
+const BRICK_COLORS = ['#d01012', '#f2cd37', '#0055bf', '#237841', '#fe8a18', '#a0bcac', '#923978', '#5a93db', '#bb805a'];
+const LIGHT_COLORS = new Set(['#f2cd37', '#fe8a18', '#a0bcac', '#5a93db', '#bb805a']);
+function themeColor(theme) {
+  let h = 0;
+  for (const ch of theme) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return BRICK_COLORS[h % BRICK_COLORS.length];
 }
 
 function filtered() {
@@ -118,6 +128,11 @@ function render() {
         price(s.prices || {}),
       ].filter(Boolean);
       el.querySelector('.facts').replaceChildren(...facts.map((t) => Object.assign(document.createElement('li'), { textContent: t })));
+
+      const color = themeColor(s.theme);
+      el.style.setProperty('--c', color);
+      el.style.setProperty('--ct', LIGHT_COLORS.has(color) ? '#1b1a17' : '#fff');
+      el.querySelector('.official-btn').textContent = daysLeft(s) >= 0 ? 'Köp nytt på LEGO.com' : 'Se på LEGO.com';
 
       const links = shopLinks(s);
       el.querySelectorAll('[data-shop]').forEach((a) => (a.href = links[a.dataset.shop]));

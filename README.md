@@ -1,6 +1,6 @@
-# LEGO Utgår snart
+# Klosskoll – LEGO®-set som utgår snart
 
-En enkel webbapp som visar LEGO-set som snart går ur sortimentet, så att du hinner köpa dem nya eller leta begagnat när de har utgått. Varje set har snabblänkar till Tradera, Blocket, BrickLink och eBay.
+En enkel webbapp som visar LEGO-set som snart går ur sortimentet, så att du hinner köpa dem nya eller leta begagnat när de har utgått. Varje set har en länk till LEGO.com (köp nytt) och snabblänkar till Tradera, Blocket, BrickLink och eBay (köp begagnat). Appen länkar också till LEGO.com:s officiella lista ”Utgår snart”.
 
 ## Kom igång
 
@@ -55,3 +55,22 @@ public/js/          delad Brickset-logik + datakälla (server/app)
 android/            Capacitor-projekt för Android-appen
 test/               npm test
 ```
+
+## Allt är gratis
+
+| Del | Kostnad |
+| --- | --- |
+| Brickset API | Gratis nyckel, 100 `getSets`-anrop per dygn (appen gör ungefär 10) |
+| Capacitor (Android-skal) | Öppen källkod (MIT) |
+| Node.js, Gradle, Android SDK | Gratis |
+| GitHub Actions + Releases | Gratis för publika repon |
+| Typsnitt Fredoka och Inter (Google Fonts) | Gratis (SIL Open Font License) |
+| Länkar till LEGO.com, Tradera, Blocket, BrickLink och eBay | Vanliga sök-/produktlänkar, inget API eller kostnad |
+
+## Varumärke och upphovsrätt
+
+- Appen heter **Klosskoll**. LEGO används bara för att beskriva vad den handlar om, så som LEGO:s *Fair Play*-riktlinjer tillåter, aldrig som appens namn eller logga.
+- Designen är egen: knoppar, klossar och kraftiga färger. Ingen LEGO-logga, inget LEGO-typsnitt och inga minifigurer.
+- Ikonen och splashen är en egen generisk byggkloss (vektor).
+- Produktbilderna länkas från Brickset och tillhör respektive rättighetsinnehavare.
+- Appen visar texten: *LEGO® är ett varumärke som tillhör LEGO-koncernen, som inte sponsrar, godkänner eller stödjer den här appen.*

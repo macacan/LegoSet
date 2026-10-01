@@ -1,6 +1,6 @@
 {
   "appId": "se.legoset.utgarsnart",
-  "appName": "LEGO Utgår snart",
+  "appName": "Klosskoll",
   "webDir": "public",
   "android": {
     "backgroundColor": "#e3000b"

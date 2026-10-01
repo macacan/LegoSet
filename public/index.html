@@ -3,23 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LEGO Utgår snart</title>
+  <title>Klosskoll</title>
   <meta name="description" content="LEGO-set som snart går ur sortimentet – köp innan de försvinner eller hitta dem begagnat.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="hero">
     <div class="wrap">
       <div class="topbar">
-        <div class="brand"><span class="brick" aria-hidden="true"></span> Utgår snart</div>
+        <div class="brand"><span class="brick" aria-hidden="true"></span> Klosskoll</div>
         <button id="open-settings" class="gear" aria-label="Inställningar" hidden>⚙</button>
       </div>
-      <h1>LEGO-set på väg ut ur sortimentet</h1>
+      <h1>LEGO®-set på väg ut ur sortimentet</h1>
       <p class="lead">Hinn köpa nytt innan de försvinner – eller hitta dem begagnat när de väl har utgått.</p>
+      <a class="official" href="https://www.lego.com/sv-se/categories/retiring-soon" target="_blank" rel="noopener">Se LEGO.com:s officiella lista ”Utgår snart” ↗</a>
     </div>
+    <div class="bricks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </header>
 
   <main class="wrap">
@@ -47,8 +49,9 @@
   </main>
 
   <footer class="wrap foot">
-    Data från <a href="https://brickset.com" target="_blank" rel="noopener">Brickset</a> (gratis API, cachas ett dygn).
-    Utgångsdatum är prognoser och kan ändras. Inte kopplad till LEGO-koncernen.
+    <p>Data och bilder från <a href="https://brickset.com" target="_blank" rel="noopener">Brickset</a> (gratis API, cachas ett dygn).
+    Utgångsdatum är prognoser och kan ändras. Officiell info finns på <a href="https://www.lego.com/sv-se" target="_blank" rel="noopener">LEGO.com</a>.</p>
+    <p>LEGO® är ett varumärke som tillhör LEGO-koncernen, som inte sponsrar, godkänner eller stödjer den här appen.</p>
   </footer>
 
   <dialog id="settings">
@@ -78,6 +81,7 @@
         <div class="meta"><span class="num"></span><span class="theme"></span></div>
         <h2 class="name"></h2>
         <ul class="facts"></ul>
+        <a class="official-btn" data-shop="lego" target="_blank" rel="noopener"></a>
         <div class="buy">
           <span>Köp begagnat:</span>
           <a data-shop="tradera" target="_blank" rel="noopener">Tradera</a>
