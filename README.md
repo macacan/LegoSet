@@ -29,9 +29,20 @@ Frankfurter (ECB-kurser) ─────────────────┘ 
 - **Lägg in nyckeln en gång:** GitHub → repot → *Settings → Secrets and variables → Actions → New repository secret*. Namn: `BRICKSET_API_KEY`, värde: din nyckel. Kör sedan *Actions → Uppdatera data (dagligen) → Run workflow*. Utan nyckel publiceras exempeldata.
 - GitHub pausar schemalagda körningar om repot inte har haft någon aktivitet på 60 dagar. Då räcker det att trycka *Enable workflow* igen.
 
+## Navigering
+
+Flikraden i botten har fyra flikar:
+
+- **Utgår snart** – set som snart slutar säljas, med filter för tid och tema.
+- **Köp begagnat** – set som nyss har slutat säljas.
+- **Sparade** – set du har markerat med ☆.
+- **Profil** – namn, valuta och favoritteman.
+
+Varje kort har två knappar: *Köp nytt* (LEGO.com) och *Begagnat*. Begagnat öppnar ett ark med Tradera, Blocket, BrickLink och eBay. Androids tillbaka-knapp går mellan flikarna.
+
 ## Valuta och profil
 
-- I profilen (knappen uppe till höger) väljer du valuta: SEK, EUR, USD, GBP, NOK, DKK eller CAD.
+- Under fliken **Profil** väljer du valuta: SEK, EUR, USD, GBP, NOK, DKK eller CAD.
   USD, GBP, EUR och CAD visar LEGO:s listpris i den regionen. SEK, NOK och DKK räknas om från det europeiska listpriset med dagens ECB-kurs och visas med ≈.
 - Profilen innehåller namn, färg, valuta, favoritteman och sparade set. **Allt sparas bara i telefonen.** Det finns inget konto och ingen inloggning.
 

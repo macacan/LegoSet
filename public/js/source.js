@@ -40,9 +40,13 @@ function cached() {
   }
 }
 
-async function demo(note) {
-  const d = await (await fetch('data/demo-sets.json')).json();
-  return { source: 'demo', note, updatedAt: d.updatedAt, sets: d.sets };
+async function demo() {
+  try {
+    const d = await (await fetch('data/demo-sets.json')).json();
+    return { source: 'demo', offline: true, updatedAt: d.updatedAt, sets: d.sets };
+  } catch {
+    return { source: 'none', offline: true, sets: [] };
+  }
 }
 
 async function fetchJson(url) {
@@ -82,8 +86,9 @@ export async function loadData({ force = false } = {}) {
     write(CHECKED, String(Date.now()));
     return feed;
   } catch (err) {
-    if (cache) return { ...cache, note: 'Offline – visar sparad data.' };
-    return demo(`Kunde inte hämta data (${err.message}) – visar exempeldata.`);
+    console.warn('Kunde inte hämta listan:', err?.message);
+    if (cache) return { ...cache, offline: true };
+    return demo();
   }
 }
 
