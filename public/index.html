@@ -15,7 +15,7 @@
     <div class="wrap">
       <div class="topbar">
         <div class="brand"><span class="brick" aria-hidden="true"></span> Klosskoll</div>
-        <button id="open-settings" class="gear" aria-label="Inställningar" hidden>⚙</button>
+        <div class="me"><span id="hello"></span><button id="open-profile" class="avatar" aria-label="Min profil">👤</button></div>
       </div>
       <h1>LEGO®-set på väg ut ur sortimentet</h1>
       <p class="lead">Hinn köpa nytt innan de försvinner – eller hitta dem begagnat när de väl har utgått.</p>
@@ -32,6 +32,7 @@
         <option value="exit">Utgår först</option>
         <option value="pieces">Flest bitar</option>
         <option value="name">Namn A–Ö</option>
+        <option value="price">Lägst pris</option>
         <option value="year">Nyast först</option>
       </select>
       <div class="chips" role="group" aria-label="Period">
@@ -40,6 +41,7 @@
         <button class="chip" data-range="180">Inom 6 mån</button>
         <button class="chip" data-range="retired">Nyss utgångna</button>
         <button class="chip" data-range="saved">★ Sparade</button>
+        <button class="chip fav" id="fav-chip" type="button">♥ Välj teman</button>
       </div>
     </section>
 
@@ -49,23 +51,35 @@
   </main>
 
   <footer class="wrap foot">
-    <p>Data och bilder från <a href="https://brickset.com" target="_blank" rel="noopener">Brickset</a> (gratis API, cachas ett dygn).
+    <p>Data och bilder från <a href="https://brickset.com" target="_blank" rel="noopener">Brickset</a>, uppdateras en gång per dygn. Växelkurser från ECB via <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter</a>.
     Utgångsdatum är prognoser och kan ändras. Officiell info finns på <a href="https://www.lego.com/sv-se" target="_blank" rel="noopener">LEGO.com</a>.</p>
     <p>LEGO® är ett varumärke som tillhör LEGO-koncernen, som inte sponsrar, godkänner eller stödjer den här appen.</p>
   </footer>
 
-  <dialog id="settings">
+  <dialog id="profile">
     <form method="dialog">
-      <h2>Inställningar</h2>
-      <p>Appen hämtar riktig data från <b>Brickset</b>, som har ett gratis API. Skapa ett konto och hämta en nyckel på
-        <a href="https://brickset.com/tools/webservices/requestkey" target="_blank" rel="noopener">brickset.com</a>, och klistra in den här.</p>
-      <label for="api-key">Brickset API-nyckel</label>
-      <input id="api-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="t.ex. 3-AbCd-EfGh-IjKl">
-      <p class="hint">Datan sparas i telefonen och uppdateras en gång per dygn (ungefär 10 anrop). Brickset tillåter 100 anrop per dygn.</p>
+      <h2>Min profil</h2>
+      <p class="hint">Allt sparas bara i din telefon. Inget konto och ingen inloggning.</p>
+
+      <label for="p-name">Namn (valfritt)</label>
+      <input id="p-name" type="text" maxlength="30" autocomplete="off" placeholder="Vad ska vi kalla dig?">
+
+      <span class="label">Färg</span>
+      <div id="p-colors" class="swatches"></div>
+
+      <label for="p-currency">Valuta</label>
+      <select id="p-currency"></select>
+      <p class="hint">SEK, NOK och DKK räknas om från europeiskt listpris med dagens ECB-kurs (≈). USD, GBP, EUR och CAD visar LEGO:s listpris.</p>
+
+      <span class="label">Favoritteman</span>
+      <div id="p-themes" class="themes"></div>
+
+      <p id="p-stats" class="hint"></p>
       <div class="actions">
-        <button id="refresh" class="secondary">Uppdatera nu</button>
-        <button id="close-settings" class="secondary" value="cancel">Avbryt</button>
-        <button id="save-settings" class="primary">Spara</button>
+        <button id="p-reset" class="secondary danger">Rensa</button>
+        <button id="p-refresh" class="secondary">Uppdatera data</button>
+        <button id="p-close" class="secondary" value="cancel">Avbryt</button>
+        <button id="p-save" class="primary">Spara</button>
       </div>
     </form>
   </dialog>
@@ -81,6 +95,7 @@
         <div class="meta"><span class="num"></span><span class="theme"></span></div>
         <h2 class="name"></h2>
         <ul class="facts"></ul>
+        <div class="price"></div>
         <a class="official-btn" data-shop="lego" target="_blank" rel="noopener"></a>
         <div class="buy">
           <span>Köp begagnat:</span>

@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon -PversionCode=${{ github.run_number }}
 
       - name: Döp om APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk LegoUtgarSnart.apk

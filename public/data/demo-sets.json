@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-10-01T00:00:00Z",
-  "about": "Exempeldata: kända set som enligt LEGO-media (Brick Fanatics m.fl.) väntas utgå i slutet av 2026. Datumen är ungefärliga. Sätt BRICKSET_API_KEY för riktig, komplett data.",
+  "about": "Exempeldata: kända set som enligt LEGO-media (Brick Fanatics m.fl.) väntas utgå i slutet av 2026. Datumen är ungefärliga. Sätt BRICKSET_API_KEY för riktig, komplett data. Priserna är ungefärliga europeiska listpriser.",
   "sets": [
     {
       "id": "demo-21333",
@@ -18,9 +18,10 @@
       "exitDate": "2026-12-31",
       "approximate": true,
       "prices": {
-        "DE": null,
+        "DE": 169.99,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     },
@@ -40,9 +41,10 @@
       "exitDate": "2026-12-31",
       "approximate": true,
       "prices": {
-        "DE": null,
+        "DE": 149.99,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     },
@@ -62,9 +64,10 @@
       "exitDate": "2026-12-31",
       "approximate": true,
       "prices": {
-        "DE": null,
+        "DE": 169.99,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     },
@@ -84,9 +87,10 @@
       "exitDate": "2026-12-31",
       "approximate": true,
       "prices": {
-        "DE": null,
+        "DE": 249.99,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     },
@@ -106,9 +110,10 @@
       "exitDate": "2026-12-31",
       "approximate": true,
       "prices": {
-        "DE": null,
+        "DE": 849.99,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     },
@@ -128,9 +133,10 @@
       "exitDate": "2026-12-31",
       "approximate": true,
       "prices": {
-        "DE": null,
+        "DE": 429.99,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     },
@@ -152,7 +158,8 @@
       "prices": {
         "DE": null,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     },
@@ -172,9 +179,10 @@
       "exitDate": "2026-12-31",
       "approximate": true,
       "prices": {
-        "DE": null,
+        "DE": 299.99,
         "UK": null,
-        "US": null
+        "US": null,
+        "CA": null
       },
       "rating": null
     }

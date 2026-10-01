@@ -56,6 +56,7 @@ export function normalize(set) {
       DE: lego.DE?.retailPrice ?? null,
       UK: lego.UK?.retailPrice ?? null,
       US: lego.US?.retailPrice ?? null,
+      CA: lego.CA?.retailPrice ?? null,
     },
     rating: set.rating || null,
   };

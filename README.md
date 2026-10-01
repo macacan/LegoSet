@@ -13,15 +13,37 @@ npm start              # öppna http://localhost:3000
 
 Utan nyckel visas en liten lista med exempeldata.
 
+## Så hämtas datan (skalar till många användare)
+
+```
+Brickset API ──(1 gång/dygn, din nyckel)──▶ GitHub Actions ──▶ grenen "data" (retiring.json)
+Frankfurter (ECB-kurser) ─────────────────┘                          │
+                                                                     ▼
+                                              jsDelivr CDN (gratis) ──▶ alla appar
+                                                                     (sparar i telefonen,
+                                                                      kollar högst var 6:e h)
+```
+
+- **Bara du anropar Brickset.** Workflowen `.github/workflows/data.yml` körs varje natt (04:17 UTC). Den gör ungefär 10 anrop, oavsett om appen har 10 eller 10 000 användare.
+- Appen hämtar den färdiga filen från `cdn.jsdelivr.net/gh/macacan/LegoSet@data/retiring.json`. Om det inte går används `raw.githubusercontent.com`. Filen sparas i telefonen, så appen fungerar offline och frågar högst var 6:e timme.
+- **Lägg in nyckeln en gång:** GitHub → repot → *Settings → Secrets and variables → Actions → New repository secret*. Namn: `BRICKSET_API_KEY`, värde: din nyckel. Kör sedan *Actions → Uppdatera data (dagligen) → Run workflow*. Utan nyckel publiceras exempeldata.
+- GitHub pausar schemalagda körningar om repot inte har haft någon aktivitet på 60 dagar. Då räcker det att trycka *Enable workflow* igen.
+
+## Valuta och profil
+
+- I profilen (knappen uppe till höger) väljer du valuta: SEK, EUR, USD, GBP, NOK, DKK eller CAD.
+  USD, GBP, EUR och CAD visar LEGO:s listpris i den regionen. SEK, NOK och DKK räknas om från det europeiska listpriset med dagens ECB-kurs och visas med ≈.
+- Profilen innehåller namn, färg, valuta, favoritteman och sparade set. **Allt sparas bara i telefonen.** Det finns inget konto och ingen inloggning.
+
 ## Android-app (APK)
 
 Varje push bygger en test-APK med GitHub Actions (`.github/workflows/android.yml`). Den publiceras som releasen **test-apk** under *Releases* i repot.
 
 1. Öppna releasen på telefonen och ladda ner `LegoUtgarSnart.apk`.
 2. Installera filen. Android frågar om du vill tillåta installation från okända källor.
-3. Tryck på ⚙ i appen och klistra in din Brickset-nyckel.
+3. Klart. Appen hämtar den delade datafilen, och användarna behöver ingen egen nyckel.
 
-I appen frågar telefonen Brickset direkt och sparar svaret i 24 timmar. Det behövs alltså ingen server.
+Test-APK:erna signeras med en fast testnyckel (`android/app/debug.keystore`), så nya versioner kan installeras ovanpå gamla. Inför Google Play behövs en egen, hemlig nyckel.
 
 Bygga själv (kräver Android SDK och JDK 21):
 
@@ -51,7 +73,8 @@ server.js           liten HTTP-server + /api/retiring
 lib/brickset.js     hämtning, filtrering, disk-cache
 public/data/       exempeldata när nyckel saknas
 public/             frontend (HTML/CSS/JS, inget byggsteg)
-public/js/          delad Brickset-logik + datakälla (server/app)
+public/js/          Brickset-logik, datakälla, profil, valuta
+scripts/build-feed.mjs  bygger den delade datafilen (körs i GitHub Actions)
 android/            Capacitor-projekt för Android-appen
 test/               npm test
 ```
@@ -60,7 +83,9 @@ test/               npm test
 
 | Del | Kostnad |
 | --- | --- |
-| Brickset API | Gratis nyckel, 100 `getSets`-anrop per dygn (appen gör ungefär 10) |
+| Brickset API | Gratis nyckel, 100 `getSets`-anrop per dygn (bara den dagliga körningen anropar, ungefär 10) |
+| Frankfurter (växelkurser från ECB) | Gratis, ingen nyckel |
+| jsDelivr CDN + raw.githubusercontent.com | Gratis för publika GitHub-repon |
 | Capacitor (Android-skal) | Öppen källkod (MIT) |
 | Node.js, Gradle, Android SDK | Gratis |
 | GitHub Actions + Releases | Gratis för publika repon |

@@ -1,22 +1,19 @@
-import { loadData, isApp, getApiKey, setApiKey } from './js/source.js';
+import { loadData, lastChecked } from './js/source.js';
+import { loadProfile, saveProfile, resetProfile, AVATAR_COLORS } from './js/profile.js';
+import { CURRENCIES, priceIn } from './js/money.js';
 
 const $ = (s) => document.querySelector(s);
 const DAY = 86400000;
-const SAVED_KEY = 'legoset:saved';
 
-const state = { sets: [], q: '', theme: '', sort: 'exit', range: 'all', saved: loadSaved() };
+const state = { sets: [], fx: null, data: null, q: '', theme: '', sort: 'exit', range: 'all', profile: loadProfile() };
+const isSaved = (s) => state.profile.saved.includes(s.id);
+const price = (s) => priceIn(s.prices, state.profile.currency, state.fx);
 
-function loadSaved() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(SAVED_KEY)) || []);
-  } catch {
-    return new Set();
-  }
-}
-function storeSaved() {
-  try {
-    localStorage.setItem(SAVED_KEY, JSON.stringify([...state.saved]));
-  } catch {}
+function updateProfile(change) {
+  Object.assign(state.profile, change);
+  saveProfile(state.profile);
+  renderAvatar();
+  render();
 }
 
 const today = () => new Date(new Date().toDateString()).getTime();
@@ -26,13 +23,6 @@ const fmtDate = (iso, approx) =>
   approx
     ? `ca ${new Date(iso).toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' })}`
     : new Date(iso).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
-
-function price(p) {
-  if (p.DE) return `${p.DE.toFixed(2).replace('.', ',')} €`;
-  if (p.UK) return `£${p.UK.toFixed(2)}`;
-  if (p.US) return `$${p.US.toFixed(2)}`;
-  return null;
-}
 
 function badge(s) {
   const d = daysLeft(s);
@@ -68,11 +58,12 @@ function filtered() {
   const q = state.q.trim().toLowerCase();
   const list = state.sets.filter((s) => {
     if (state.theme && s.theme !== state.theme) return false;
+    if (state.profile.onlyFav && state.profile.favThemes.length && !state.profile.favThemes.includes(s.theme)) return false;
     if (q && !`${s.name} ${s.number} ${s.theme} ${s.subtheme || ''}`.toLowerCase().includes(q)) return false;
     const d = daysLeft(s);
     switch (state.range) {
       case 'retired': return d < 0;
-      case 'saved': return state.saved.has(s.id);
+      case 'saved': return isSaved(s);
       case 'all': return true;
       default: return d >= 0 && d <= Number(state.range);
     }
@@ -82,6 +73,7 @@ function filtered() {
     pieces: (a, b) => (b.pieces || 0) - (a.pieces || 0),
     name: (a, b) => a.name.localeCompare(b.name, 'sv'),
     year: (a, b) => b.year - a.year,
+    price: (a, b) => (price(a)?.amount ?? Infinity) - (price(b)?.amount ?? Infinity),
   }[state.sort];
   return list.sort(by);
 }
@@ -105,14 +97,13 @@ function render() {
       bEl.title = `Utgår ${fmtDate(s.exitDate, s.approximate)}`;
 
       const save = el.querySelector('.save');
-      const on = state.saved.has(s.id);
+      const on = isSaved(s);
       save.textContent = on ? '★' : '☆';
       save.classList.toggle('on', on);
       save.setAttribute('aria-pressed', on);
       save.onclick = () => {
-        state.saved.has(s.id) ? state.saved.delete(s.id) : state.saved.add(s.id);
-        storeSaved();
-        render();
+        const saved = on ? state.profile.saved.filter((id) => id !== s.id) : [...state.profile.saved, s.id];
+        updateProfile({ saved });
       };
 
       el.querySelector('.num').textContent = s.number;
@@ -125,9 +116,12 @@ function render() {
         s.pieces && `${s.pieces.toLocaleString('sv-SE')} bitar`,
         s.minifigs && `${s.minifigs} figurer`,
         s.year && `Från ${s.year}`,
-        price(s.prices || {}),
       ].filter(Boolean);
       el.querySelector('.facts').replaceChildren(...facts.map((t) => Object.assign(document.createElement('li'), { textContent: t })));
+      const p = price(s);
+      const priceEl = el.querySelector('.price');
+      priceEl.textContent = p ? p.text : '';
+      priceEl.title = p && !p.exact ? 'Omräknat från europeiskt listpris med dagens växelkurs' : 'Listpris';
 
       const color = themeColor(s.theme);
       el.style.setProperty('--c', color);
@@ -146,19 +140,25 @@ function bind() {
   $('#q').addEventListener('input', (e) => { state.q = e.target.value; render(); });
   $('#theme').addEventListener('change', (e) => { state.theme = e.target.value; render(); });
   $('#sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
-  document.querySelectorAll('.chip').forEach((c) =>
+  document.querySelectorAll('.chip[data-range]').forEach((c) =>
     c.addEventListener('click', () => {
-      document.querySelectorAll('.chip').forEach((x) => x.classList.toggle('active', x === c));
+      document.querySelectorAll('.chip[data-range]').forEach((x) => x.classList.toggle('active', x === c));
       state.range = c.dataset.range;
       render();
     }),
   );
+  $('#fav-chip').addEventListener('click', () => {
+    if (!state.profile.favThemes.length) return openProfile();
+    updateProfile({ onlyFav: !state.profile.onlyFav });
+  });
 }
 
 function showData(data) {
+  state.data = data;
   state.sets = data.sets || [];
+  state.fx = data.currency || null;
 
-  const themes = [...new Set(state.sets.map((s) => s.theme))].sort((a, b) => a.localeCompare(b, 'sv'));
+  const themes = allThemes();
   if (!themes.includes(state.theme)) state.theme = '';
   $('#theme').replaceChildren(new Option('Alla teman', ''), ...themes.map((t) => new Option(t, t)));
   $('#theme').value = state.theme;
@@ -166,16 +166,18 @@ function showData(data) {
   const upcoming = state.sets.filter((s) => daysLeft(s) >= 0).length;
   const when = new Date(data.updatedAt).toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' });
   const status = $('#status');
-  status.textContent = `${upcoming} set på väg ut · uppdaterad ${when}`;
+  status.textContent = `${upcoming} set på väg ut · data från ${when}`;
   status.classList.toggle('warn', data.source === 'demo' || Boolean(data.note));
   if (data.note) status.textContent += ` — ${data.note}`;
   render();
 }
 
+const allThemes = () => [...new Set(state.sets.map((s) => s.theme))].sort((a, b) => a.localeCompare(b, 'sv'));
+
 async function load(opts) {
   const status = $('#status');
   status.classList.remove('warn');
-  status.textContent = getApiKey() && isApp() ? 'Hämtar från Brickset… (kan ta några sekunder)' : 'Laddar…';
+  status.textContent = 'Laddar…';
   try {
     showData(await loadData(opts));
   } catch (err) {
@@ -184,30 +186,97 @@ async function load(opts) {
   }
 }
 
-function bindSettings() {
-  const dlg = $('#settings');
-  $('#open-settings').hidden = false;
-  $('#open-settings').onclick = () => {
-    $('#api-key').value = getApiKey();
-    dlg.showModal();
-  };
-  $('#close-settings').onclick = () => dlg.close();
-  $('#save-settings').onclick = (e) => {
+// ---------- Profil (lokal, ingen inloggning) ----------
+
+function renderAvatar() {
+  const p = state.profile;
+  const btn = $('#open-profile');
+  btn.style.background = p.color;
+  btn.style.color = ['#f2cd37', '#fe8a18'].includes(p.color) ? '#1b1a17' : '#fff';
+  btn.textContent = p.name ? p.name.trim()[0].toUpperCase() : '👤';
+  $('#hello').textContent = p.name ? `Hej ${p.name.trim()}!` : '';
+
+  const fav = $('#fav-chip');
+  fav.classList.toggle('active', p.onlyFav && p.favThemes.length > 0);
+  fav.textContent = p.favThemes.length ? `♥ Mina teman (${p.favThemes.length})` : '♥ Välj teman';
+}
+
+function openProfile() {
+  const p = state.profile;
+  const dlg = $('#profile');
+  $('#p-name').value = p.name;
+  $('#p-currency').replaceChildren(...CURRENCIES.map((c) => new Option(c.label, c.code, false, c.code === p.currency)));
+
+  const colors = $('#p-colors');
+  colors.replaceChildren(
+    ...AVATAR_COLORS.map((c) => {
+      const b = Object.assign(document.createElement('button'), { type: 'button', className: 'swatch' });
+      b.style.background = c;
+      b.setAttribute('aria-label', `Färg ${c}`);
+      b.setAttribute('aria-pressed', c === p.color);
+      b.onclick = () => {
+        colors.querySelectorAll('.swatch').forEach((x) => x.setAttribute('aria-pressed', x === b));
+        b.dataset.pick = c;
+        colors.dataset.color = c;
+      };
+      return b;
+    }),
+  );
+  colors.dataset.color = p.color;
+
+  $('#p-themes').replaceChildren(
+    ...allThemes().map((t) => {
+      const label = document.createElement('label');
+      const box = Object.assign(document.createElement('input'), { type: 'checkbox', value: t, checked: p.favThemes.includes(t) });
+      label.append(box, ` ${t}`);
+      return label;
+    }),
+  );
+
+  const checked = lastChecked();
+  const fx = state.fx?.date ? ` · växelkurser ${state.fx.date}` : '';
+  $('#p-stats').textContent =
+    `${p.saved.length} sparade set · ${p.favThemes.length} favoritteman` +
+    (state.data ? ` · data från ${new Date(state.data.updatedAt).toLocaleDateString('sv-SE')}${fx}` : '') +
+    (checked ? ` · kollad ${checked.toLocaleTimeString('sv-SE', { timeStyle: 'short' })}` : '');
+  dlg.showModal();
+}
+
+function bindProfile() {
+  const dlg = $('#profile');
+  $('#open-profile').onclick = openProfile;
+  $('#p-close').onclick = () => dlg.close();
+  $('#p-save').onclick = (e) => {
     e.preventDefault();
-    setApiKey($('#api-key').value.trim());
+    const favThemes = [...$('#p-themes').querySelectorAll('input:checked')].map((i) => i.value);
+    updateProfile({
+      name: $('#p-name').value.trim().slice(0, 30),
+      color: $('#p-colors').dataset.color,
+      currency: $('#p-currency').value,
+      favThemes,
+      onlyFav: favThemes.length ? state.profile.onlyFav || !state.profile.favThemes.length : false,
+    });
     dlg.close();
-    load();
   };
-  $('#refresh').onclick = (e) => {
+  $('#p-refresh').onclick = (e) => {
     e.preventDefault();
     dlg.close();
     load({ force: true });
+  };
+  $('#p-reset').onclick = (e) => {
+    e.preventDefault();
+    if (!confirm('Rensa profil, sparade set och favoritteman?')) return;
+    state.profile = resetProfile();
+    renderAvatar();
+    render();
+    dlg.close();
   };
 }
 
 function init() {
   bind();
-  if (isApp()) bindSettings();
+  bindProfile();
+  renderAvatar();
   load();
 }
 

@@ -1,16 +1,21 @@
 // Var datan kommer ifrån.
-// Webb: vår egen server (/api/retiring) som cachar Brickset.
-// Mobilapp (Capacitor): telefonen frågar Brickset direkt med användarens nyckel
-// och cachar svaret i 24 h, så det blir högst ett tiotal anrop per dygn.
+//
+// Ingen telefon pratar med Brickset. En gång per dygn hämtar GitHub Actions
+// datan och lägger en färdig fil (retiring.json) på grenen "data", som serveras
+// gratis via jsDelivr-CDN. Appen hämtar filen, sparar den i telefonen och
+// frågar högst var 6:e timme – så 10 000 användare ger fortfarande bara
+// ~10 Brickset-anrop per dygn.
 
-import { fetchFromBrickset } from './retiring.js';
+const REPO = 'macacan/LegoSet';
+export const FEED_URLS = [
+  `https://cdn.jsdelivr.net/gh/${REPO}@data/retiring.json`,
+  `https://raw.githubusercontent.com/${REPO}/data/retiring.json`,
+];
 
-const KEY = 'legoset:apiKey';
-const CACHE = 'legoset:cache';
-const FAILED = 'legoset:failedAt';
-const CACHE_MS = 24 * 3600 * 1000;
-const RETRY_MS = 3600 * 1000;
-const MIN_MANUAL_MS = 10 * 60 * 1000; // "Uppdatera nu" tidigast var 10:e minut
+const CACHE = 'legoset:feed';
+const CHECKED = 'legoset:feedCheckedAt';
+const REFRESH_MS = 6 * 3600 * 1000;
+const MIN_MANUAL_MS = 5 * 60 * 1000;
 
 export const isApp = () => Boolean(window.Capacitor?.isNativePlatform?.());
 
@@ -27,22 +32,6 @@ function write(k, v) {
   } catch {}
 }
 
-export const getApiKey = () => read(KEY) || '';
-export function setApiKey(key) {
-  const changed = key !== getApiKey();
-  write(KEY, key || null);
-  if (changed) {
-    write(CACHE, null);
-    write(FAILED, null);
-  }
-}
-
-async function demo(note) {
-  const res = await fetch('data/demo-sets.json');
-  const d = await res.json();
-  return { source: 'demo', note, updatedAt: d.updatedAt, sets: d.sets };
-}
-
 function cached() {
   try {
     return JSON.parse(read(CACHE));
@@ -51,33 +40,54 @@ function cached() {
   }
 }
 
-async function loadInApp(force) {
-  const apiKey = getApiKey();
-  if (!apiKey) return demo('Lägg in en gratis Brickset-nyckel under ⚙ för riktig data.');
+async function demo(note) {
+  const d = await (await fetch('data/demo-sets.json')).json();
+  return { source: 'demo', note, updatedAt: d.updatedAt, sets: d.sets };
+}
 
-  const cache = cached();
-  const age = cache ? Date.now() - new Date(cache.updatedAt).getTime() : Infinity;
-  if (cache && (age < CACHE_MS && !(force && age > MIN_MANUAL_MS))) return cache;
-  if (Date.now() - Number(read(FAILED) || 0) < RETRY_MS && !force) {
-    return cache || demo('Brickset gick inte att nå nyss – visar exempeldata.');
-  }
+async function fetchJson(url) {
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`${res.status}`);
+  const body = await res.json();
+  if (!Array.isArray(body.sets)) throw new Error('ogiltig fil');
+  return body;
+}
 
-  try {
-    const result = await fetchFromBrickset({ apiKey });
-    const data = { source: 'brickset', updatedAt: new Date().toISOString(), ...result };
-    write(CACHE, JSON.stringify(data));
-    write(FAILED, null);
-    return data;
-  } catch (err) {
-    write(FAILED, String(Date.now()));
-    if (cache) return { ...cache, note: `Kunde inte uppdatera: ${err.message}` };
-    return demo(`Kunde inte hämta från Brickset (${err.message}) – visar exempeldata.`);
+async function fetchFeed() {
+  // Webbversionen med egen server (npm start) har /api/retiring.
+  if (!isApp() && location.protocol.startsWith('http')) {
+    try {
+      return await fetchJson('api/retiring');
+    } catch {}
   }
+  let lastErr;
+  for (const url of FEED_URLS) {
+    try {
+      return await fetchJson(url);
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
 }
 
 export async function loadData({ force = false } = {}) {
-  if (isApp()) return loadInApp(force);
-  const res = await fetch('api/retiring');
-  if (!res.ok) throw new Error(res.status);
-  return res.json();
+  const cache = cached();
+  const since = Date.now() - Number(read(CHECKED) || 0);
+  if (cache && since < (force ? MIN_MANUAL_MS : REFRESH_MS)) return cache;
+
+  try {
+    const feed = await fetchFeed();
+    write(CACHE, JSON.stringify(feed));
+    write(CHECKED, String(Date.now()));
+    return feed;
+  } catch (err) {
+    if (cache) return { ...cache, note: 'Offline – visar sparad data.' };
+    return demo(`Kunde inte hämta data (${err.message}) – visar exempeldata.`);
+  }
+}
+
+export function lastChecked() {
+  const t = Number(read(CHECKED) || 0);
+  return t ? new Date(t) : null;
 }
