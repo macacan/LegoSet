@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LEGO Utgår snart</title>
+  <meta name="description" content="LEGO-set som snart går ur sortimentet – köp innan de försvinner eller hitta dem begagnat.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="brand"><span class="brick" aria-hidden="true"></span> Utgår snart</div>
+      <h1>LEGO-set på väg ut ur sortimentet</h1>
+      <p class="lead">Hinn köpa nytt innan de försvinner – eller hitta dem begagnat när de väl har utgått.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="controls" aria-label="Filter">
+      <input id="q" type="search" placeholder="Sök namn eller setnummer…" autocomplete="off" aria-label="Sök">
+      <select id="theme" aria-label="Tema"><option value="">Alla teman</option></select>
+      <select id="sort" aria-label="Sortera">
+        <option value="exit">Utgår först</option>
+        <option value="pieces">Flest bitar</option>
+        <option value="name">Namn A–Ö</option>
+        <option value="year">Nyast först</option>
+      </select>
+      <div class="chips" role="group" aria-label="Period">
+        <button class="chip active" data-range="all">Alla</button>
+        <button class="chip" data-range="90">Inom 3 mån</button>
+        <button class="chip" data-range="180">Inom 6 mån</button>
+        <button class="chip" data-range="retired">Nyss utgångna</button>
+        <button class="chip" data-range="saved">★ Sparade</button>
+      </div>
+    </section>
+
+    <p id="status" class="status" role="status">Laddar…</p>
+    <section id="grid" class="grid" aria-live="polite"></section>
+    <p id="empty" class="empty" hidden>Inga set matchar filtret.</p>
+  </main>
+
+  <footer class="wrap foot">
+    Data från <a href="https://brickset.com" target="_blank" rel="noopener">Brickset</a> (gratis API, cachas ett dygn).
+    Utgångsdatum är prognoser och kan ändras. Inte kopplad till LEGO-koncernen.
+  </footer>
+
+  <template id="card">
+    <article class="card">
+      <div class="pic">
+        <img loading="lazy" alt="">
+        <span class="badge"></span>
+        <button class="save" aria-label="Spara">☆</button>
+      </div>
+      <div class="body">
+        <div class="meta"><span class="num"></span><span class="theme"></span></div>
+        <h2 class="name"></h2>
+        <ul class="facts"></ul>
+        <div class="buy">
+          <span>Köp begagnat:</span>
+          <a data-shop="tradera" target="_blank" rel="noopener">Tradera</a>
+          <a data-shop="blocket" target="_blank" rel="noopener">Blocket</a>
+          <a data-shop="bricklink" target="_blank" rel="noopener">BrickLink</a>
+          <a data-shop="ebay" target="_blank" rel="noopener">eBay</a>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

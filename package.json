@@ -1,0 +1,12 @@
+{
+  "name": "legoset",
+  "version": "1.0.0",
+  "description": "Se vilka LEGO-set som snart utgår – så du hinner köpa nytt eller leta begagnat.",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  }
+}
