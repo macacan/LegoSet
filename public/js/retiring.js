@@ -95,17 +95,16 @@ export async function fetchFromBrickset({ apiKey, yearsBack = 4, maxPages = 12, 
   for (let y = current - yearsBack; y <= current; y++) years.push(y);
 
   const all = [];
-  let page = 1;
+  let calls = 0;
   let matches = Infinity;
-  while (all.length < matches && page <= maxPages) {
-    if (page > 1) await sleep(PAUSE_MS);
-    const body = await getPage(apiKey, years, page);
+  while (all.length < matches && calls < maxPages) {
+    if (calls > 0) await sleep(PAUSE_MS);
+    const body = await getPage(apiKey, years, ++calls);
     matches = body.matches ?? 0;
     const sets = body.sets || [];
     all.push(...sets);
     if (sets.length < PAGE_SIZE) break;
-    page++;
   }
-  return { sets: pickRetiring(all, now), calls: page, scanned: all.length };
+  return { sets: pickRetiring(all, now), calls, scanned: all.length, matches };
 }
 

@@ -24,7 +24,7 @@ Frankfurter (ECB-kurser) ─────────────────┘ 
                                                                       kollar högst var 6:e h)
 ```
 
-- **Bara du anropar Brickset.** Workflowen `.github/workflows/data.yml` körs varje natt (04:17 UTC). Den gör ungefär 10 anrop, oavsett om appen har 10 eller 10 000 användare.
+- **Bara du anropar Brickset.** Workflowen `.github/workflows/data.yml` körs varje natt (04:17 UTC). Den gör ungefär 10–30 anrop (beror på hur många set Brickset har), oavsett om appen har 10 eller 10 000 användare.
 - Appen hämtar den färdiga filen från `cdn.jsdelivr.net/gh/macacan/LegoSet@data/retiring.json`. Om det inte går används `raw.githubusercontent.com`. Filen sparas i telefonen, så appen fungerar offline och frågar högst var 6:e timme.
 - Samma körning bygger också `catalog.json`: en kompakt katalog över alla set (ungefär 20 000) från [Rebrickables](https://rebrickable.com/downloads/) gratis databasfiler, som inte kräver någon nyckel. Appen hämtar katalogen först när man söker eller öppnar Samling, och sparar den i telefonen i en vecka.
 - **Spärr mot för många anrop:** om Brickset-datan är yngre än 20 timmar återanvänds den, så flera körningar samma dag gör inga nya anrop. En ny hämtning kan tvingas fram via *Run workflow → force*.
@@ -74,8 +74,8 @@ cd android && ./gradlew assembleDebug
 
 Så här hålls antalet anrop nere:
 
-- Servern hämtar set från de senaste `YEARS_BACK` åren (standard 4). Den tar 500 set per anrop, ett anrop i taget med paus emellan, och högst `MAX_PAGES` anrop (standard 12).
-- Resultatet sparas i `cache/` och återanvänds i `CACHE_HOURS` timmar (standard 24). I praktiken blir det ungefär 10 anrop per dygn. Gränsen är 100.
+- Hämtningen läser set från de senaste `YEARS_BACK` åren (standard 9, så att äldre set som fortfarande säljs kommer med). Den tar 500 set per anrop, ett anrop i taget med paus emellan, och högst `MAX_PAGES` anrop (standard 40). Om taket nås syns en varning i Actions-loggen.
+- Resultatet sparas i `cache/` och återanvänds i `CACHE_HOURS` timmar (standard 24). I praktiken blir det 10–30 anrop per dygn (högst 40). Gränsen är 100.
 - Om ett anrop misslyckas väntar servern en timme innan den försöker igen. Under tiden visas den senaste datan den har.
 
 Appen visar set som utgår inom cirka 13 månader och set som utgick de senaste 4 månaderna (de är bra att jaga begagnat).
@@ -99,7 +99,7 @@ test/               npm test
 
 | Del | Kostnad |
 | --- | --- |
-| Brickset API | Gratis nyckel, 100 `getSets`-anrop per dygn (bara den dagliga körningen anropar, ungefär 10) |
+| Brickset API | Gratis nyckel, 100 `getSets`-anrop per dygn (bara den dagliga körningen anropar, 10–30 st) |
 | Frankfurter (växelkurser från ECB) | Gratis, ingen nyckel |
 | Rebrickable (katalog över alla set) | Gratis nedladdning, ingen nyckel |
 | jsDelivr CDN + raw.githubusercontent.com | Gratis för publika GitHub-repon |

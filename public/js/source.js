@@ -4,7 +4,7 @@
 // datan och lägger en färdig fil (retiring.json) på grenen "data", som serveras
 // gratis via jsDelivr-CDN. Appen hämtar filen, sparar den i telefonen och
 // frågar högst var 6:e timme – så 10 000 användare ger fortfarande bara
-// ~10 Brickset-anrop per dygn.
+// 10–30 Brickset-anrop per dygn (högst 40).
 
 const REPO = 'macacan/LegoSet';
 export const FEED_URLS = [

@@ -57,10 +57,11 @@ async function main() {
   } else if (apiKey) {
     const result = await fetchFromBrickset({
       apiKey,
-      yearsBack: Number(process.env.YEARS_BACK) || 4,
-      maxPages: Number(process.env.MAX_PAGES) || 12,
+      yearsBack: Number(process.env.YEARS_BACK) || 9,
+      maxPages: Number(process.env.MAX_PAGES) || 40,
     });
-    console.log(`Brickset: ${result.calls} anrop, ${result.scanned} set lästa, ${result.sets.length} på väg ut.`);
+    console.log(`Brickset: ${result.calls} anrop, ${result.scanned} av ${result.matches} set lästa, ${result.sets.length} på väg ut.`);
+    if (result.scanned < result.matches) console.warn('::warning::Alla set hann inte läsas – höj MAX_PAGES.');
     feed = { source: 'brickset', updatedAt: new Date().toISOString(), sets: result.sets };
   } else {
     console.warn('Ingen BRICKSET_API_KEY – bygger från exempeldata.');

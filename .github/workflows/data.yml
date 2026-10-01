@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: 'Hämta från Brickset även om datan är färsk (använder ~10 av 100 dagliga anrop)'
+        description: 'Hämta från Brickset även om datan är färsk (använder 10–40 av 100 dagliga anrop)'
         type: boolean
         default: false
   push:

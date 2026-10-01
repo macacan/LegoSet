@@ -55,3 +55,22 @@ test('fetchFromBrickset bläddrar sidor och slutar när allt är hämtat', async
     globalThis.fetch = realFetch;
   }
 });
+
+test('fetchFromBrickset stannar vid maxPages och räknar anropen rätt', async () => {
+  const { fetchFromBrickset } = await import('../public/js/retiring.js');
+  const realFetch = globalThis.fetch;
+  let n = 0;
+  globalThis.fetch = async () => {
+    n++;
+    return { ok: true, json: async () => ({ status: 'success', matches: 5000, sets: Array.from({ length: 500 }, (_, i) => raw(n * 1000 + i, {})) }) };
+  };
+  try {
+    const r = await fetchFromBrickset({ apiKey: 'k', maxPages: 2, now });
+    assert.equal(n, 2);
+    assert.equal(r.calls, 2);
+    assert.equal(r.scanned, 1000);
+    assert.equal(r.matches, 5000);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

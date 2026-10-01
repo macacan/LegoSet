@@ -19,8 +19,8 @@ const getData = createStore({
   apiKey: env.BRICKSET_API_KEY?.trim(),
   cacheDir: path.join(root, 'cache'),
   cacheHours: Number(env.CACHE_HOURS) || 24,
-  yearsBack: Number(env.YEARS_BACK) || 4,
-  maxPages: Number(env.MAX_PAGES) || 12,
+  yearsBack: Number(env.YEARS_BACK) || 9,
+  maxPages: Number(env.MAX_PAGES) || 40,
   demoFile: path.join(root, 'public', 'data', 'demo-sets.json'),
 });
 
