@@ -16,20 +16,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
           cache: gradle
-
-      - uses: android-actions/setup-android@v3
 
       - name: Installera och synka webbappen in i Android-projektet
         run: |
@@ -40,13 +38,14 @@ jobs:
       - name: Bygg debug-APK
         working-directory: android
         run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
       - name: Döp om APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk LegoUtgarSnart.apk
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: LegoUtgarSnart-apk
           path: LegoUtgarSnart.apk
