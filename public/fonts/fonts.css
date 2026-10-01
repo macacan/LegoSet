@@ -1,0 +1,16 @@
+/* Typsnitten ligger i appen (inga anrop till Google).
+   Fredoka och Inter: SIL Open Font License 1.1 – fria att använda och dela. */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(fredoka-latin.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(inter-latin.woff2) format('woff2');
+}

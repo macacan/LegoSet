@@ -27,6 +27,7 @@ Frankfurter (ECB-kurser) ─────────────────┘ 
 - **Bara du anropar Brickset.** Workflowen `.github/workflows/data.yml` körs varje natt (04:17 UTC). Den gör ungefär 10 anrop, oavsett om appen har 10 eller 10 000 användare.
 - Appen hämtar den färdiga filen från `cdn.jsdelivr.net/gh/macacan/LegoSet@data/retiring.json`. Om det inte går används `raw.githubusercontent.com`. Filen sparas i telefonen, så appen fungerar offline och frågar högst var 6:e timme.
 - Samma körning bygger också `catalog.json`: en kompakt katalog över alla set (ungefär 20 000) från [Rebrickables](https://rebrickable.com/downloads/) gratis databasfiler, som inte kräver någon nyckel. Appen hämtar katalogen först när man söker eller öppnar Samling, och sparar den i telefonen i en vecka.
+- **Spärr mot för många anrop:** om Brickset-datan är yngre än 20 timmar återanvänds den, så flera körningar samma dag gör inga nya anrop. En ny hämtning kan tvingas fram via *Run workflow → force*.
 - **Lägg in nyckeln en gång:** GitHub → repot → *Settings → Secrets and variables → Actions → New repository secret*. Namn: `BRICKSET_API_KEY`, värde: din nyckel. Kör sedan *Actions → Uppdatera data (dagligen) → Run workflow*. Utan nyckel publiceras exempeldata.
 - GitHub pausar schemalagda körningar om repot inte har haft någon aktivitet på 60 dagar. Då räcker det att trycka *Enable workflow* igen.
 
@@ -105,7 +106,7 @@ test/               npm test
 | Capacitor (Android-skal) | Öppen källkod (MIT) |
 | Node.js, Gradle, Android SDK | Gratis |
 | GitHub Actions + Releases | Gratis för publika repon |
-| Typsnitt Fredoka och Inter (Google Fonts) | Gratis (SIL Open Font License) |
+| Typsnitt Fredoka och Inter (ligger i appen, inga anrop till Google) | Gratis (SIL Open Font License) |
 | Länkar till LEGO.com, Tradera, Blocket, BrickLink och eBay | Vanliga sök-/produktlänkar, inget API eller kostnad |
 
 ## Varumärke och upphovsrätt

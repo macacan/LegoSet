@@ -24,7 +24,7 @@ const getData = createStore({
   demoFile: path.join(root, 'public', 'data', 'demo-sets.json'),
 });
 
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8' };
 const publicDir = path.join(root, 'public');
 
 const server = http.createServer(async (req, res) => {

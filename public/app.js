@@ -106,7 +106,7 @@ function showTab() {
   $('#time-chips').hidden = state.tab !== 'home';
   $('#theme-chips').hidden = state.tab === 'collection';
   $('#sort').closest('.sort').hidden = state.tab === 'collection';
-  $('#q').placeholder = state.tab === 'collection' ? 'Sök set att lägga till' : 'Sök setnummer (t.ex. 10305) eller namn';
+  $('#q').placeholder = state.tab === 'collection' ? 'Sök set att lägga till' : 'Sök setnummer eller namn';
   if (state.tab === 'collection') ensureCatalog();
   $('#list-title').textContent = TABS[state.tab].title;
   $('#sort option[value=exit]').textContent = state.tab === 'retired' ? 'Senast slutsålda' : 'Snart borta först';

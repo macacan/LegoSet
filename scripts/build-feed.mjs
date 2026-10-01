@@ -44,8 +44,17 @@ async function main() {
     rates = previous?.currency || null;
   }
 
+  // Spärr: Brickset tillåter 100 anrop/dygn. Om datan redan hämtats de senaste
+  // 20 timmarna (t.ex. vid flera pushar eller manuella körningar samma dag)
+  // återanvänds den. FORCE=1 tvingar fram en ny hämtning.
+  const age = previous?.updatedAt ? Date.now() - new Date(previous.updatedAt).getTime() : Infinity;
+  const recent = apiKey && previous?.source === 'brickset' && age < 20 * 3600 * 1000 && process.env.FORCE !== '1';
+
   let feed;
-  if (apiKey) {
+  if (recent) {
+    console.log(`Brickset-data är ${Math.round(age / 3600000)} h gammal – återanvänder den (inga anrop).`);
+    feed = { source: 'brickset', updatedAt: previous.updatedAt, sets: previous.sets };
+  } else if (apiKey) {
     const result = await fetchFromBrickset({
       apiKey,
       yearsBack: Number(process.env.YEARS_BACK) || 4,

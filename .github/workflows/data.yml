@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '17 4 * * *'   # varje natt 04:17 UTC
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Hämta från Brickset även om datan är färsk (använder ~10 av 100 dagliga anrop)'
+        type: boolean
+        default: false
   push:
     branches: [main, master, 'claude/**']
     paths: ['scripts/build-feed.mjs', 'scripts/build-catalog.mjs', 'public/js/retiring.js', '.github/workflows/data.yml']
@@ -38,6 +43,7 @@ jobs:
       - name: Bygg feed/retiring.json
         env:
           BRICKSET_API_KEY: ${{ secrets.BRICKSET_API_KEY }}
+          FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
         run: node scripts/build-feed.mjs
 
       - name: Bygg feed/catalog.json (alla set, från Rebrickable)

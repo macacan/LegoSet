@@ -1,0 +1,5 @@
+Fredoka – Copyright 2016 The Fredoka Project Authors (https://github.com/hafontia-zz/Fredoka)
+Inter – Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
+
+Båda typsnitten är licensierade under SIL Open Font License, Version 1.1:
+https://openfontlicense.org
