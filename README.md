@@ -43,7 +43,7 @@ Flikraden i botten har fyra flikar:
 
 Sökfältet söker både bland seten som snart utgår och bland **alla LEGO-set**. Skriver man ett setnummer, till exempel `10305`, visas det setet direkt, och man kan lägga det i sin samling.
 
-Varje kort har två knappar: *Köp nytt* (LEGO.com) och *Begagnat*. Begagnat öppnar ett ark med Tradera, Blocket, BrickLink och eBay. Androids tillbaka-knapp går mellan flikarna.
+Listorna är rena rader med bild, namn, nedräkning och pris. Trycker man på en rad öppnas ett detaljark med *Köp nytt på LEGO.com*, *＋ Min samling*, *☆ Spara* och länkar till Tradera, Blocket, BrickLink och eBay. Androids tillbaka-knapp stänger arket eller går mellan flikarna.
 
 ## Valuta och profil
 

@@ -18,48 +18,36 @@
     </div>
   </header>
 
-  <!-- Startsidans välkomstruta -->
-  <section class="hero" id="hero">
-    <div class="wrap">
-      <p class="hello" id="hello"></p>
-      <h1>Hinn köpa innan de försvinner</h1>
-      <p class="lead">LEGO®-set som snart slutar säljas. Köp nytt i tid – eller hitta dem begagnat efteråt.</p>
-    </div>
-    <div class="bricks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  </section>
-
   <main class="wrap">
-    <!-- Listvyer (Utgår snart / Köp begagnat / Sparade) -->
+    <!-- Listvyer: Utgår snart / Begagnat / Samling / Sparade -->
     <section id="list-view">
-      <div class="toolbar" id="toolbar">
-        <div class="search">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-          <input id="q" type="search" placeholder="Sök setnummer eller namn" autocomplete="off" aria-label="Sök">
-        </div>
-        <div class="scroller" id="time-chips" role="group" aria-label="När">
-          <button class="chip active" data-range="all">Alla</button>
-          <button class="chip" data-range="90">Inom 3 mån</button>
-          <button class="chip" data-range="180">Inom 6 mån</button>
-        </div>
-        <div class="scroller" id="theme-chips" role="group" aria-label="Tema"></div>
+      <h1 id="list-title">Utgår snart</h1>
+      <p id="list-intro" class="intro"></p>
+
+      <div class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Sök setnummer eller namn" autocomplete="off" enterkeyhint="search" aria-label="Sök">
       </div>
 
-      <div class="list-head">
-        <h2 id="list-title">Utgår snart</h2>
-        <label class="sort">
-          <span class="sr">Sortera</span>
-          <select id="sort">
-            <option value="exit">Snart borta först</option>
-            <option value="price">Lägst pris</option>
-            <option value="pieces">Flest bitar</option>
-            <option value="name">A–Ö</option>
-          </select>
-        </label>
+      <div class="filters" id="filters">
+        <div class="seg" id="time" role="radiogroup" aria-label="När">
+          <button type="button" data-range="all" aria-checked="true" role="radio">Alla</button>
+          <button type="button" data-range="90" aria-checked="false" role="radio">3 mån</button>
+          <button type="button" data-range="180" aria-checked="false" role="radio">6 mån</button>
+        </div>
+        <select id="theme" aria-label="Tema"></select>
+        <select id="sort" aria-label="Sortera">
+          <option value="exit">Snart borta</option>
+          <option value="price">Lägst pris</option>
+          <option value="pieces">Flest bitar</option>
+          <option value="name">A–Ö</option>
+        </select>
       </div>
+
       <p id="notice" class="notice" hidden></p>
-      <p id="summary" class="summary" hidden></p>
+      <p id="count" class="count-line"></p>
 
-      <div id="grid" class="grid" aria-live="polite"></div>
+      <ul id="list" class="list" aria-live="polite"></ul>
 
       <div id="empty" class="empty" hidden>
         <div class="empty-icon" aria-hidden="true">🧱</div>
@@ -68,14 +56,15 @@
 
       <!-- Sökträffar bland alla LEGO-set -->
       <section id="more" hidden>
-        <h2 class="more-title">Alla LEGO-set</h2>
+        <h2>Alla LEGO-set</h2>
         <p id="more-status" class="small"></p>
-        <div id="more-grid" class="grid"></div>
+        <ul id="more-list" class="list"></ul>
       </section>
     </section>
 
     <!-- Profil -->
     <section id="profile-view" hidden>
+      <h1>Profil</h1>
       <div class="panel me-card">
         <span class="avatar big" id="p-avatar" aria-hidden="true">👤</span>
         <div class="grow">
@@ -87,22 +76,22 @@
 
       <div class="panel">
         <h3>Valuta</h3>
-        <div class="segmented" id="p-currency" role="radiogroup" aria-label="Valuta"></div>
+        <div class="seg wide" id="p-currency" role="radiogroup" aria-label="Valuta"></div>
         <p class="small" id="p-currency-note"></p>
       </div>
 
       <div class="panel">
         <h3>Mina favoritteman</h3>
-        <p class="small">Välj de teman du gillar – sen kan du snabbt filtrera på dem.</p>
+        <p class="small">Välj teman du gillar – sen kan du filtrera på ”♥ Mina teman”.</p>
         <div class="tags" id="p-themes"></div>
       </div>
 
       <div class="panel about">
         <h3>Om Klosskoll</h3>
-        <p>Klosskoll visar vilka LEGO®-set som snart slutar säljas, så att du hinner köpa dem – eller hittar dem begagnat på Tradera, Blocket, BrickLink och eBay.</p>
+        <p>Klosskoll visar vilka LEGO®-set som snart slutar säljas, så att du hinner köpa dem – eller hittar dem begagnat efteråt.</p>
         <p>Listan uppdateras varje dag. Utgångsdatumen är prognoser och kan ändras. Se även
           <a href="https://www.lego.com/sv-se/categories/retiring-soon" target="_blank" rel="noopener">LEGO.com:s egen lista</a>.</p>
-        <p>Dina val sparas bara i din telefon. Inget konto behövs.</p>
+        <p>Dina val och din samling sparas bara i din telefon. Inget konto behövs.</p>
         <p class="small">Setdata och bilder: <a href="https://brickset.com" target="_blank" rel="noopener">Brickset</a> och <a href="https://rebrickable.com" target="_blank" rel="noopener">Rebrickable</a>. Växelkurser: Europeiska centralbanken.<br>
           LEGO® är ett varumärke som tillhör LEGO-koncernen, som inte sponsrar, godkänner eller stödjer den här appen.</p>
         <button type="button" class="link-btn" id="p-reset">Rensa mina val och min samling</button>
@@ -122,11 +111,11 @@
     </a>
     <a href="#samling" data-tab="collection">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="18" height="11" rx="2"/><path d="M6.5 9V6.5h4V9M13.5 9V6.5h4V9"/></svg>
-      <span>Samling</span><b class="count" id="own-count" hidden></b>
+      <span>Samling</span><b class="badge-count" id="own-count" hidden></b>
     </a>
     <a href="#sparade" data-tab="saved">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/></svg>
-      <span>Sparade</span><b class="count" id="saved-count" hidden></b>
+      <span>Sparade</span><b class="badge-count" id="saved-count" hidden></b>
     </a>
     <a href="#profil" data-tab="profile">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
@@ -134,41 +123,34 @@
     </a>
   </nav>
 
-  <!-- Begagnat-ark -->
-  <dialog id="used" class="sheet">
-    <form method="dialog">
-      <h2>Köp begagnat</h2>
-      <p class="small" id="used-name"></p>
+  <!-- Detaljark: alla val för ett set -->
+  <dialog id="detail" class="sheet" aria-labelledby="d-name">
+    <div class="sheet-body">
+      <button type="button" class="sheet-close" id="d-close" aria-label="Stäng">✕</button>
+      <div class="d-pic"><img id="d-img" alt=""></div>
+      <p class="d-meta"><span class="num" id="d-num"></span> <span id="d-theme"></span></p>
+      <h2 id="d-name"></h2>
+      <p class="d-status" id="d-status"></p>
+      <p class="d-facts" id="d-facts"></p>
+      <p class="d-price" id="d-price"></p>
+
+      <div class="d-actions">
+        <a class="btn primary" id="d-lego" target="_blank" rel="noopener">Köp nytt på LEGO.com</a>
+        <div class="d-toggles">
+          <button type="button" class="btn toggle" id="d-own"></button>
+          <button type="button" class="btn toggle" id="d-save"></button>
+        </div>
+      </div>
+
+      <h3>Köp begagnat</h3>
       <div class="shops">
         <a data-shop="tradera" target="_blank" rel="noopener"><b>Tradera</b><span>Auktioner i Sverige</span></a>
         <a data-shop="blocket" target="_blank" rel="noopener"><b>Blocket</b><span>Köp av privatpersoner</span></a>
-        <a data-shop="bricklink" target="_blank" rel="noopener"><b>BrickLink</b><span>Stor marknad för LEGO®</span></a>
+        <a data-shop="bricklink" target="_blank" rel="noopener"><b>BrickLink</b><span>Stor LEGO®-marknad</span></a>
         <a data-shop="ebay" target="_blank" rel="noopener"><b>eBay</b><span>Internationellt</span></a>
       </div>
-      <button class="close-btn" value="close">Stäng</button>
-    </form>
+    </div>
   </dialog>
-
-  <template id="card">
-    <article class="card">
-      <div class="pic">
-        <img loading="lazy" alt="">
-        <span class="badge"></span>
-        <button type="button" class="save" aria-label="Spara">☆</button>
-      </div>
-      <div class="body">
-        <div class="meta"><span class="num"></span><span class="theme"></span></div>
-        <h3 class="name"></h3>
-        <p class="sub"></p>
-        <p class="price"></p>
-        <button type="button" class="own"></button>
-        <div class="btns">
-          <a class="btn primary" target="_blank" rel="noopener"></a>
-          <button type="button" class="btn ghost"></button>
-        </div>
-      </div>
-    </article>
-  </template>
 
   <script src="app.js" type="module"></script>
 </body>
