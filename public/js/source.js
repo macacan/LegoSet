@@ -96,3 +96,75 @@ export function lastChecked() {
   const t = Number(read(CHECKED) || 0);
   return t ? new Date(t) : null;
 }
+
+// ---------- Katalog över alla set (för sökning och "Min samling") ----------
+// Hämtas först när den behövs, sparas i telefonens cache och förnyas en gång i veckan.
+
+export const CATALOG_URLS = FEED_URLS.map((u) => u.replace('retiring.json', 'catalog.json'));
+const CATALOG_KEY = 'https://klosskoll.local/catalog.json';
+const CATALOG_MAX_AGE = 7 * 24 * 3600 * 1000;
+let catalogPromise = null;
+
+async function openCache() {
+  try {
+    return 'caches' in window ? await caches.open('klosskoll-v1') : null;
+  } catch {
+    return null;
+  }
+}
+
+function indexCatalog(raw) {
+  const sets = raw.sets.map(([num, name, year, t, pieces]) => ({ num, number: num.replace(/-1$/, ''), name, year, theme: raw.themes[t], pieces }));
+  return { sets, byNum: new Map(sets.map((s) => [s.num, s])) };
+}
+
+export function loadCatalog() {
+  catalogPromise ||= (async () => {
+    const cache = await openCache();
+    const stored = cache && (await cache.match(CATALOG_KEY).catch(() => null));
+    const age = stored ? Date.now() - Number(stored.headers.get('x-saved-at') || 0) : Infinity;
+    if (stored && age < CATALOG_MAX_AGE) return indexCatalog(await stored.json());
+
+    for (const url of CATALOG_URLS) {
+      try {
+        const res = await fetch(url, { cache: 'no-cache' });
+        if (!res.ok) continue;
+        const text = await res.text();
+        const raw = JSON.parse(text);
+        if (!Array.isArray(raw.sets)) continue;
+        cache?.put(CATALOG_KEY, new Response(text, { headers: { 'content-type': 'application/json', 'x-saved-at': String(Date.now()) } })).catch(() => {});
+        return indexCatalog(raw);
+      } catch {}
+    }
+    if (stored) return indexCatalog(await stored.json());
+    catalogPromise = null; // försök igen nästa gång
+    return null;
+  })();
+  return catalogPromise;
+}
+
+// Sök i katalogen: setnummer (t.ex. "10305" eller "10305-1") eller ord i namnet.
+export function searchCatalog(catalog, query, limit = 24) {
+  const q = query.trim().toLowerCase();
+  if (!catalog || q.length < 2) return [];
+  if (/^\d+(-\d+)?$/.test(q)) {
+    if (q.length < 3) return [];
+    const exact = [];
+    const prefix = [];
+    for (const s of catalog.sets) {
+      if (s.num === q || s.number === q) exact.push(s);
+      else if (s.num.startsWith(q)) prefix.push(s);
+      if (exact.length + prefix.length > 400) break;
+    }
+    return [...exact, ...prefix].slice(0, limit);
+  }
+  if (q.length < 3) return [];
+  const words = q.split(/\s+/);
+  const out = [];
+  for (const s of catalog.sets) {
+    const hay = `${s.name} ${s.theme}`.toLowerCase();
+    if (words.every((w) => hay.includes(w))) out.push(s);
+    if (out.length >= limit) break;
+  }
+  return out;
+}

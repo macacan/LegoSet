@@ -1,4 +1,4 @@
-import { loadData } from './js/source.js';
+import { loadData, loadCatalog, searchCatalog } from './js/source.js';
 import { loadProfile, saveProfile, resetProfile, AVATAR_COLORS } from './js/profile.js';
 import { CURRENCIES, priceIn } from './js/money.js';
 
@@ -15,6 +15,8 @@ const state = {
   range: 'all',
   sort: 'exit',
   profile: loadProfile(),
+  catalog: null,
+  catalogState: 'idle', // idle | loading | ready | failed
 };
 
 // ---------- Hjälpare ----------
@@ -22,6 +24,19 @@ const state = {
 const today = () => new Date(new Date().toDateString()).getTime();
 const daysLeft = (s) => Math.round((new Date(s.exitDate).getTime() - today()) / DAY);
 const isSaved = (s) => state.profile.saved.includes(s.id);
+const isOwned = (num) => state.profile.collection.some((c) => c.num === num);
+const feedByNum = () => new Map(state.sets.map((s) => [s.fullNumber, s]));
+
+// Gemensam form för set från listan, katalogen och samlingen.
+const fromFeed = (s) => ({ num: s.fullNumber, number: s.number, name: s.name, theme: s.theme, year: s.year, pieces: s.pieces });
+
+function toggleOwned(item) {
+  const collection = isOwned(item.num)
+    ? state.profile.collection.filter((c) => c.num !== item.num)
+    : [{ num: item.num, number: item.number, name: item.name, theme: item.theme, year: item.year, pieces: item.pieces, addedAt: new Date().toISOString() }, ...state.profile.collection];
+  updateProfile({ collection });
+  render();
+}
 const price = (s) => priceIn(s.prices, state.profile.currency, state.fx);
 const el = (tag, props = {}) => Object.assign(document.createElement(tag), props);
 
@@ -50,7 +65,7 @@ function shopLinks(s) {
     lego: `https://www.lego.com/sv-se/search?q=${encodeURIComponent(s.number)}`,
     tradera: `https://www.tradera.com/search?q=${q}`,
     blocket: `https://www.blocket.se/annonser/hela_sverige?q=${q}`,
-    bricklink: `https://www.bricklink.com/v2/catalog/catalogitem.page?S=${encodeURIComponent(s.fullNumber)}#T=P`,
+    bricklink: `https://www.bricklink.com/v2/catalog/catalogitem.page?S=${encodeURIComponent(s.fullNumber || s.num)}#T=P`,
     ebay: `https://www.ebay.com/sch/i.html?_nkw=${q}`,
   };
 }
@@ -73,6 +88,7 @@ const TABS = {
   home: { hash: '', title: 'Utgår snart' },
   retired: { hash: '#begagnat', title: 'Köp begagnat' },
   saved: { hash: '#sparade', title: 'Mina sparade set' },
+  collection: { hash: '#samling', title: 'Min samling' },
   profile: { hash: '#profil', title: 'Profil' },
 };
 
@@ -88,6 +104,10 @@ function showTab() {
   $('#profile-view').hidden = !isProfile;
   $('#hero').hidden = state.tab !== 'home';
   $('#time-chips').hidden = state.tab !== 'home';
+  $('#theme-chips').hidden = state.tab === 'collection';
+  $('#sort').closest('.sort').hidden = state.tab === 'collection';
+  $('#q').placeholder = state.tab === 'collection' ? 'Sök set att lägga till' : 'Sök setnummer (t.ex. 10305) eller namn';
+  if (state.tab === 'collection') ensureCatalog();
   $('#list-title').textContent = TABS[state.tab].title;
   $('#sort option[value=exit]').textContent = state.tab === 'retired' ? 'Senast slutsålda' : 'Snart borta först';
   document.querySelectorAll('.tabs a').forEach((a) => a.classList.toggle('active', a.dataset.tab === state.tab));
@@ -187,6 +207,8 @@ function card(s) {
   const p = price(s);
   node.querySelector('.price').textContent = p ? (gone ? `Nypris var ${p.text}` : p.text) : '';
 
+  paintOwn(node.querySelector('.own'), fromFeed(s));
+
   const links = shopLinks(s);
   const primary = node.querySelector('.btn.primary');
   const secondary = node.querySelector('.btn.ghost');
@@ -203,6 +225,96 @@ function card(s) {
   return node;
 }
 
+function paintOwn(btn, item) {
+  const owned = isOwned(item.num);
+  btn.textContent = owned ? '✓ I min samling' : '＋ Lägg i min samling';
+  btn.classList.toggle('on', owned);
+  btn.setAttribute('aria-pressed', owned);
+  btn.onclick = () => toggleOwned(item);
+}
+
+// Kort för set som inte finns i "utgår snart"-listan (från katalogen/samlingen).
+function plainCard(item) {
+  const node = $('#card').content.firstElementChild.cloneNode(true);
+  const color = themeColor(item.theme || 'Övrigt');
+  node.style.setProperty('--c', color);
+  node.style.setProperty('--ct', textOn(color));
+  const img = node.querySelector('img');
+  img.src = `https://images.brickset.com/sets/images/${item.num}.jpg`;
+  img.alt = item.name;
+  img.onerror = () => img.replaceWith(el('div', { className: 'noimg', textContent: '🧱' }));
+  node.querySelector('.badge').remove();
+  node.querySelector('.save').remove();
+  node.querySelector('.num').textContent = item.number;
+  node.querySelector('.theme').textContent = item.theme || '';
+  node.querySelector('.name').textContent = item.name;
+  node.querySelector('.sub').textContent = [item.pieces && `${item.pieces.toLocaleString('sv-SE')} bitar`, item.year && `Från ${item.year}`]
+    .filter(Boolean)
+    .join(' · ');
+  paintOwn(node.querySelector('.own'), item);
+  const links = shopLinks(item);
+  const primary = node.querySelector('.btn.primary');
+  primary.replaceWith(el('button', { type: 'button', className: 'btn primary', textContent: 'Begagnat', onclick: () => openUsed(item) }));
+  const ghost = node.querySelector('.btn.ghost');
+  ghost.replaceWith(el('a', { className: 'btn ghost', href: links.lego, target: '_blank', rel: 'noopener', textContent: 'LEGO.com' }));
+  return node;
+}
+
+async function ensureCatalog() {
+  if (state.catalogState === 'loading' || state.catalogState === 'ready') return;
+  state.catalogState = 'loading';
+  renderMore();
+  state.catalog = await loadCatalog();
+  state.catalogState = state.catalog ? 'ready' : 'failed';
+  render();
+}
+
+// Sökträffar bland alla set (utöver de som redan visas ovanför).
+function renderMore(shownNums = new Set()) {
+  const q = state.q.trim();
+  const searching = q.length >= 2;
+  $('#more').hidden = !searching;
+  if (!searching) return 0;
+  if (state.catalogState === 'idle') ensureCatalog();
+
+  const status = $('#more-status');
+  const feed = feedByNum();
+  const hits = searchCatalog(state.catalog, q).filter((c) => !shownNums.has(c.num));
+  $('#more-grid').replaceChildren(...hits.map((c) => (feed.has(c.num) ? card(feed.get(c.num)) : plainCard(c))));
+  status.textContent =
+    state.catalogState === 'loading' ? 'Söker bland alla LEGO-set…'
+    : state.catalogState === 'failed' ? 'Kunde inte söka bland alla set just nu. Kolla din uppkoppling.'
+    : hits.length ? (state.tab === 'collection' ? 'Tryck ＋ för att lägga till i din samling.' : '')
+    : /^\d+$/.test(q) && q.length < 3 ? 'Skriv minst tre siffror.'
+    : 'Hittade inget set som matchar.';
+  status.hidden = !status.textContent;
+  $('#more').hidden = !hits.length && state.catalogState === 'ready' && shownNums.size > 0;
+  return hits.length;
+}
+
+function renderCollection() {
+  const q = state.q.trim().toLowerCase();
+  const feed = feedByNum();
+  const items = state.profile.collection.filter((c) => !q || `${c.name} ${c.number} ${c.theme}`.toLowerCase().includes(q));
+  $('#grid').replaceChildren(...items.map((c) => (feed.has(c.num) ? card(feed.get(c.num)) : plainCard(c))));
+
+  const all = state.profile.collection;
+  const pieces = all.reduce((n, c) => n + (c.pieces || 0), 0);
+  const leaving = all.filter((c) => feed.has(c.num)).length;
+  const summary = $('#summary');
+  summary.hidden = !all.length;
+  summary.textContent =
+    `${all.length} set · ${pieces.toLocaleString('sv-SE')} bitar` +
+    (leaving ? ` · ${leaving} av dem slutar snart säljas eller har nyss slutat` : '');
+
+  const shown = new Set(items.map((c) => c.num));
+  const more = renderMore(shown);
+  $('#empty').hidden = items.length > 0 || q.length >= 2;
+  $('#empty-text').textContent = all.length
+    ? 'Inget i din samling matchar sökningen.'
+    : 'Din samling är tom. Sök på ett setnummer (t.ex. 10305) eller ett namn här ovanför och tryck ＋ för att lägga till.';
+}
+
 const EMPTY = {
   filtered: 'Inga set matchar. Testa att ta bort ett filter eller sök på något annat.',
   home: 'Inga set på väg ut just nu – titta in snart igen!',
@@ -214,11 +326,22 @@ function render() {
   const count = state.profile.saved.length;
   $('#saved-count').hidden = !count;
   $('#saved-count').textContent = count;
+  const owned = state.profile.collection.length;
+  $('#own-count').hidden = !owned;
+  $('#own-count').textContent = owned;
   if (state.tab === 'profile') return;
+  const searching = state.q.trim().length > 0;
+  // När man söker göms välkomstrutan så att träffarna syns direkt.
+  $('#hero').hidden = state.tab !== 'home' || searching;
+  $('.list-head').hidden = false;
+  if (state.tab === 'collection') return renderCollection();
+  $('#summary').hidden = true;
 
   const list = filtered();
   $('#grid').replaceChildren(...list.map(card));
-  $('#empty').hidden = list.length > 0 || !state.sets.length;
+  const more = renderMore(new Set(list.map((s) => s.fullNumber)));
+  $('.list-head').hidden = searching && !list.length;
+  $('#empty').hidden = list.length > 0 || more > 0 || !state.sets.length || state.q.trim().length >= 2;
   const narrowed = state.q || state.theme || (state.tab === 'home' && state.range !== 'all');
   $('#empty-text').textContent = narrowed && state.tab !== 'saved' ? EMPTY.filtered : EMPTY[state.tab];
 }
@@ -308,7 +431,7 @@ function renderProfile() {
 function bindProfile() {
   $('#p-name').addEventListener('input', (e) => updateProfile({ name: e.target.value.slice(0, 30) }));
   $('#p-reset').onclick = () => {
-    if (!confirm('Vill du rensa namn, sparade set och favoritteman?')) return;
+    if (!confirm('Vill du rensa namn, sparade set, favoritteman och din samling?')) return;
     state.profile = resetProfile();
     saveProfile(state.profile);
     renderAvatar();

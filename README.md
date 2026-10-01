@@ -26,6 +26,7 @@ Frankfurter (ECB-kurser) ─────────────────┘ 
 
 - **Bara du anropar Brickset.** Workflowen `.github/workflows/data.yml` körs varje natt (04:17 UTC). Den gör ungefär 10 anrop, oavsett om appen har 10 eller 10 000 användare.
 - Appen hämtar den färdiga filen från `cdn.jsdelivr.net/gh/macacan/LegoSet@data/retiring.json`. Om det inte går används `raw.githubusercontent.com`. Filen sparas i telefonen, så appen fungerar offline och frågar högst var 6:e timme.
+- Samma körning bygger också `catalog.json`: en kompakt katalog över alla set (ungefär 20 000) från [Rebrickables](https://rebrickable.com/downloads/) gratis databasfiler, som inte kräver någon nyckel. Appen hämtar katalogen först när man söker eller öppnar Samling, och sparar den i telefonen i en vecka.
 - **Lägg in nyckeln en gång:** GitHub → repot → *Settings → Secrets and variables → Actions → New repository secret*. Namn: `BRICKSET_API_KEY`, värde: din nyckel. Kör sedan *Actions → Uppdatera data (dagligen) → Run workflow*. Utan nyckel publiceras exempeldata.
 - GitHub pausar schemalagda körningar om repot inte har haft någon aktivitet på 60 dagar. Då räcker det att trycka *Enable workflow* igen.
 
@@ -36,7 +37,10 @@ Flikraden i botten har fyra flikar:
 - **Utgår snart** – set som snart slutar säljas, med filter för tid och tema.
 - **Köp begagnat** – set som nyss har slutat säljas.
 - **Sparade** – set du har markerat med ☆.
+- **Samling** – set du äger. Sök på setnummer eller namn och tryck ＋.
 - **Profil** – namn, valuta och favoritteman.
+
+Sökfältet söker både bland seten som snart utgår och bland **alla LEGO-set**. Skriver man ett setnummer, till exempel `10305`, visas det setet direkt, och man kan lägga det i sin samling.
 
 Varje kort har två knappar: *Köp nytt* (LEGO.com) och *Begagnat*. Begagnat öppnar ett ark med Tradera, Blocket, BrickLink och eBay. Androids tillbaka-knapp går mellan flikarna.
 
@@ -44,7 +48,7 @@ Varje kort har två knappar: *Köp nytt* (LEGO.com) och *Begagnat*. Begagnat öp
 
 - Under fliken **Profil** väljer du valuta: SEK, EUR, USD, GBP, NOK, DKK eller CAD.
   USD, GBP, EUR och CAD visar LEGO:s listpris i den regionen. SEK, NOK och DKK räknas om från det europeiska listpriset med dagens ECB-kurs och visas med ≈.
-- Profilen innehåller namn, färg, valuta, favoritteman och sparade set. **Allt sparas bara i telefonen.** Det finns inget konto och ingen inloggning.
+- Profilen innehåller namn, färg, valuta, favoritteman, sparade set och din samling. **Allt sparas bara i telefonen.** Det finns inget konto och ingen inloggning.
 
 ## Android-app (APK)
 
@@ -96,6 +100,7 @@ test/               npm test
 | --- | --- |
 | Brickset API | Gratis nyckel, 100 `getSets`-anrop per dygn (bara den dagliga körningen anropar, ungefär 10) |
 | Frankfurter (växelkurser från ECB) | Gratis, ingen nyckel |
+| Rebrickable (katalog över alla set) | Gratis nedladdning, ingen nyckel |
 | jsDelivr CDN + raw.githubusercontent.com | Gratis för publika GitHub-repon |
 | Capacitor (Android-skal) | Öppen källkod (MIT) |
 | Node.js, Gradle, Android SDK | Gratis |

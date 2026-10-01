@@ -5,7 +5,7 @@ const OLD_SAVED_KEY = 'legoset:saved';
 
 export const AVATAR_COLORS = ['#d01012', '#0055bf', '#237841', '#f2cd37', '#fe8a18', '#923978', '#1b1a17'];
 
-const defaults = () => ({ name: '', color: AVATAR_COLORS[1], currency: 'SEK', favThemes: [], saved: [] });
+const defaults = () => ({ name: '', color: AVATAR_COLORS[1], currency: 'SEK', favThemes: [], saved: [], collection: [] });
 
 export function loadProfile() {
   let p = {};
